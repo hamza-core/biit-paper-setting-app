@@ -86,4 +86,89 @@ class FacultyService {
     if (status == 'paperToSet') return 'Paper to set';
     return 'Questions to add';
   }
+
+  // ---------- Covered topics ----------
+
+  Future<List<String>> getSections() {
+    return _repository.getSections();
+  }
+
+  Future<List<WeekModel>> getWeeks(String courseCode) {
+    return _repository.getWeeks(courseCode);
+  }
+
+  Future<Map<String, Set<String>>> getSelections(String courseCode) {
+    return _repository.getSelections(courseCode);
+  }
+
+  int totalTopics(List<WeekModel> weeks) {
+    int total = 0;
+    for (int i = 0; i < weeks.length; i++) {
+      total = total + weeks[i].topics.length;
+    }
+    return total;
+  }
+
+  // 0 = none selected, 1 = some, 2 = all (for a week or for all weeks)
+  int weekState(WeekModel week, Set<String> selected) {
+    int count = 0;
+    for (int i = 0; i < week.topics.length; i++) {
+      if (selected.contains(week.topics[i].name)) count = count + 1;
+    }
+    if (count == 0) return 0;
+    return count == week.topics.length ? 2 : 1;
+  }
+
+  int allState(List<WeekModel> weeks, Set<String> selected) {
+    int total = totalTopics(weeks);
+    if (selected.isEmpty) return 0;
+    return selected.length == total ? 2 : 1;
+  }
+
+  // Selects or clears a whole week. Returns the new set.
+  void toggleWeek(WeekModel week, Set<String> selected) {
+    bool selectAll = weekState(week, selected) != 2;
+    for (int i = 0; i < week.topics.length; i++) {
+      if (selectAll) {
+        selected.add(week.topics[i].name);
+      } else {
+        selected.remove(week.topics[i].name);
+      }
+    }
+  }
+
+  void toggleAll(List<WeekModel> weeks, Set<String> selected) {
+    bool selectAll = allState(weeks, selected) != 2;
+    for (int i = 0; i < weeks.length; i++) {
+      for (int t = 0; t < weeks[i].topics.length; t++) {
+        if (selectAll) {
+          selected.add(weeks[i].topics[t].name);
+        } else {
+          selected.remove(weeks[i].topics[t].name);
+        }
+      }
+    }
+  }
+
+  void toggleTopic(String name, Set<String> selected) {
+    if (selected.contains(name)) {
+      selected.remove(name);
+    } else {
+      selected.add(name);
+    }
+  }
+
+  // Throws a message when nothing is selected in any section.
+  Future<void> submitTopics(
+    FacultyCourse course,
+    String teacherName,
+    Map<String, Set<String>> selections,
+  ) {
+    bool any = false;
+    selections.forEach((section, names) {
+      if (names.isNotEmpty) any = true;
+    });
+    if (!any) throw 'Please mark at least one topic';
+    return _repository.saveSelections(course, teacherName, selections);
+  }
 }

@@ -105,7 +105,8 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CourseDetailsScreen(course: course),
+        builder: (context) =>
+            CourseDetailsScreen(course: course, teacherName: widget.user.name),
       ),
     );
   }

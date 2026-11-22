@@ -513,4 +513,60 @@ void main() {
     expect(find.text('Technical Writing'), findsOneWidget);
     expect(find.text('Programming Fundamentals'), findsNothing);
   });
+
+  testWidgets('Faculty: mark covered topics and submit', (tester) async {
+    usePhoneScreen(tester);
+    await tester.pumpWidget(const MyApp());
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'faculty@biit.edu.pk',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), '123456');
+    await tester.tap(find.text('Sign in'));
+    await tester.pump();
+    await settle(tester);
+
+    // CS-303 has Dr. Saeed Iqbal pending, CS-301 has Mr. Afrasiab pending
+    await tester.tap(find.text('Operating Systems'));
+    await settle(tester);
+    expect(find.text('1 of 2 teachers marked their topics.'), findsOneWidget);
+    await tester.tap(find.text('Topics'));
+    await settle(tester);
+
+    expect(find.text('Covered Topics'), findsOneWidget);
+    expect(find.text('Selected: 3 of 12 topics'), findsOneWidget);
+    expect(find.text('While Loop'), findsOneWidget);
+
+    // Select a topic
+    await tester.tap(find.text('Sorting Algorithms'));
+    await settle(tester);
+    expect(find.text('Selected: 4 of 12 topics'), findsOneWidget);
+
+    // Select all topics, then clear them
+    await tester.tap(find.text('Select All Topics for Section A'));
+    await settle(tester);
+    expect(find.text('Selected: 12 of 12 topics'), findsOneWidget);
+    await tester.tap(find.text('Select All Topics for Section A'));
+    await settle(tester);
+    expect(find.text('Selected: 0 of 12 topics'), findsOneWidget);
+
+    // Nothing marked: submit is refused
+    await tester.tap(find.text('Submit your marked topics'));
+    await settle(tester);
+    expect(find.text('Please mark at least one topic'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 6));
+
+    // Search, then mark a topic and submit
+    await tester.enterText(find.byType(TextField).first, 'Heaps');
+    await settle(tester);
+    expect(find.text('Sorting Algorithms'), findsNothing);
+    await tester.tap(find.text('Heaps and Priority Queues'));
+    await settle(tester);
+    expect(find.text('Selected: 1 of 12 topics'), findsOneWidget);
+    await tester.tap(find.text('Submit your marked topics'));
+    await settle(tester);
+
+    // Back on course details: both teachers have marked now? (Amir did)
+    expect(find.text('Course Details'), findsOneWidget);
+  });
 }

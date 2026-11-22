@@ -19,7 +19,7 @@ class FacultyCourse {
 
 class TeacherStatus {
   final String name;
-  final bool marked; // true = marked their topics, false = pending
+  bool marked; // true = marked their topics, false = pending
 
   TeacherStatus({required this.name, required this.marked});
 }
@@ -46,4 +46,19 @@ class ArchivedPaper {
     required this.session,
     required this.exam,
   });
+}
+
+// A topic of a course. Some topics have sub-topics (they follow the topic).
+class TopicItem {
+  final String name;
+  final List<String> subTopics;
+
+  TopicItem({required this.name, this.subTopics = const []});
+}
+
+class WeekModel {
+  final String name; // Week 1
+  final List<TopicItem> topics;
+
+  WeekModel({required this.name, required this.topics});
 }

@@ -8,11 +8,17 @@ import '../../paper_review/presentation/similarity_sheet.dart';
 import '../domain/faculty_models.dart';
 import '../domain/faculty_service.dart';
 import 'course_status_badge.dart';
+import 'covered_topics_screen.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   final FacultyCourse course;
+  final String teacherName; // the logged in teacher
 
-  const CourseDetailsScreen({super.key, required this.course});
+  const CourseDetailsScreen({
+    super.key,
+    required this.course,
+    required this.teacherName,
+  });
 
   @override
   State<CourseDetailsScreen> createState() => _CourseDetailsScreenState();
@@ -39,6 +45,22 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     setState(() {
       _topics = topics;
     });
+  }
+
+  Future<void> _openTopics() async {
+    bool? submitted = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CoveredTopicsScreen(
+          course: widget.course,
+          teacherName: widget.teacherName,
+        ),
+      ),
+    );
+    // The teacher list shows who marked their topics, so refresh it.
+    if (submitted == true && mounted) {
+      setState(() {});
+    }
   }
 
   void _comingSoon(String name) {
@@ -114,7 +136,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     child: _whiteButton(
                       Icons.format_list_bulleted,
                       'Topics',
-                      () => _comingSoon('Covered Topics'),
+                      _openTopics,
                     ),
                   ),
                 ],

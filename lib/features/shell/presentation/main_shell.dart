@@ -208,7 +208,7 @@ class _MainShellState extends State<MainShell> {
         );
       }
       if (label == 'Papers') {
-        return const FacultyPapersScreen();
+        return FacultyPapersScreen(teacherName: widget.user.name);
       }
     }
     // Replaced by the real screen when that feature is built.
