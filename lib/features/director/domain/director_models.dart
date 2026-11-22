@@ -2,12 +2,12 @@
 class DirectorPaper {
   final String code;
   final String courseName;
-  final String status;
+  String status;
   final String teacher;
-  final String dateText; // "2 days ago", "Oct 24, 2026"
+  String dateText; // "2 days ago", "Oct 24, 2026"
   final String session;
   final String exam;
-  final bool isArchived;
+  bool isArchived;
 
   DirectorPaper({
     required this.code,

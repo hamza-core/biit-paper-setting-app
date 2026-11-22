@@ -4,6 +4,8 @@ import '../../../core/widgets/app_bottom_nav.dart';
 import '../../auth/domain/user_model.dart';
 import '../../datacell/presentation/datacell_home_screen.dart';
 import '../../director/domain/director_models.dart';
+import '../../director/domain/director_service.dart';
+import '../../paper_review/presentation/paper_workspace_screen.dart';
 import '../../director/presentation/director_courses_screen.dart';
 import '../../director/presentation/director_home_screen.dart';
 import '../../director/presentation/director_papers_screen.dart';
@@ -70,11 +72,29 @@ class _MainShellState extends State<MainShell> {
     }
   }
 
-  // The paper review screens are built in the next director feature.
+  int _directorVersion = 0; // changes when a decision is saved, to reload lists
+
+  // Opens the paper workspace. Papers that are still waiting for the
+  // director can be approved or rejected, the others are view only.
   void _openDirectorPaper(DirectorPaper paper) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${paper.courseName}: paper review is coming soon'),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaperWorkspaceScreen(
+          code: paper.code,
+          courseName: paper.courseName,
+          submittedBy: paper.teacher,
+          currentUserName: widget.user.name,
+          currentUserRole: 'Director',
+          canDecide: paper.status == 'toReview',
+          onConfirmDecision: (approve, comment) async {
+            await DirectorService().decide(paper, approve, comment);
+            if (!mounted) return;
+            setState(() {
+              _directorVersion = _directorVersion + 1;
+            });
+          },
+        ),
       ),
     );
   }
@@ -105,6 +125,7 @@ class _MainShellState extends State<MainShell> {
     if (widget.user.role == 'director') {
       if (label == 'Home') {
         return DirectorHomeScreen(
+          key: ValueKey('director-home-$_directorVersion'),
           user: widget.user,
           onLogout: widget.onLogout,
           onOpenProfile: () => _goToTab('Profile'),
@@ -112,7 +133,10 @@ class _MainShellState extends State<MainShell> {
         );
       }
       if (label == 'Papers') {
-        return DirectorPapersScreen(onOpenPaper: _openDirectorPaper);
+        return DirectorPapersScreen(
+          key: ValueKey('director-papers-$_directorVersion'),
+          onOpenPaper: _openDirectorPaper,
+        );
       }
       if (label == 'Courses') {
         return const DirectorCoursesScreen();

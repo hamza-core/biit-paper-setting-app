@@ -48,6 +48,33 @@ class DirectorService {
     return _repository.sendReminder(paper);
   }
 
+  // Approve or reject a paper the director reviewed.
+  Future<void> decide(DirectorPaper paper, bool approved, String comment) {
+    if (!approved && comment.trim().isEmpty) {
+      throw 'Please add a comment to reject the paper';
+    }
+    return _repository.saveDecision(paper, approved, comment, _todayText());
+  }
+
+  String _todayText() {
+    List<String> months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    DateTime now = DateTime.now();
+    return '${months[now.month - 1]} ${now.day}, ${now.year}';
+  }
+
   Future<List<CourseModel>> getCourses({
     String search = '',
     String department = 'All',
