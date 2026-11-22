@@ -294,4 +294,59 @@ void main() {
     await settle(tester);
     expect(find.text('Compiler Construction'), findsOneWidget);
   });
+
+  testWidgets('Director: role handover start and end', (tester) async {
+    usePhoneScreen(tester);
+    await tester.pumpWidget(const MyApp());
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'director@biit.edu.pk',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), '123456');
+    await tester.tap(find.text('Sign in'));
+    await tester.pump();
+    await settle(tester);
+
+    await tester.tap(find.text('Profile'));
+    await settle(tester);
+    expect(find.text('Dr. Jameel Sawar'), findsOneWidget);
+    await tester.tap(find.text('Role Handover'));
+    await settle(tester);
+    expect(find.text('No Active Handover'), findsOneWidget);
+    expect(find.text('Dr. Naseer Ahmed'), findsOneWidget);
+
+    // Open the sheet: confirming with an empty form shows an error
+    await tester.tap(find.text('Role Handover').last);
+    await settle(tester);
+    await tester.tap(find.text('Confirm Handover'));
+    await settle(tester);
+    expect(find.text('Please select a faculty member'), findsOneWidget);
+
+    // Fill the form
+    await tester.tap(find.text('Select Faculty Member'));
+    await settle(tester);
+    await tester.tap(find.text('Dr. Munir').last);
+    await settle(tester);
+    await tester.tap(find.text('Select Start'));
+    await settle(tester);
+    await tester.tap(find.text('OK'));
+    await settle(tester);
+    await tester.tap(find.text('Select End'));
+    await settle(tester);
+    await tester.tap(find.text('OK'));
+    await settle(tester);
+    await tester.tap(find.text('Confirm Handover'));
+    await settle(tester);
+
+    expect(find.text('ACTIVE HANDOVER'), findsOneWidget);
+    expect(find.text('Acting Director'), findsOneWidget);
+
+    // End it: goes to the history
+    await tester.tap(find.text('End Active Handover'));
+    await settle(tester);
+    await tester.tap(find.text('End'));
+    await settle(tester);
+    expect(find.text('No Active Handover'), findsOneWidget);
+    expect(find.text('Dr. Munir'), findsOneWidget);
+  });
 }
