@@ -10,6 +10,9 @@ class AppTextField extends StatelessWidget {
   final TextEditingController controller;
   final bool obscureText;
   final Widget? suffix;
+  final double textSize;
+  final bool readOnly;
+  final Color iconColor;
   final String? Function(String?)? validator;
 
   const AppTextField({
@@ -20,6 +23,9 @@ class AppTextField extends StatelessWidget {
     required this.controller,
     this.obscureText = false,
     this.suffix,
+    this.textSize = AppFontSize.body,
+    this.readOnly = false,
+    this.iconColor = AppColors.textDark,
     this.validator,
   });
 
@@ -46,15 +52,21 @@ class AppTextField extends StatelessWidget {
           child: TextFormField(
             controller: controller,
             obscureText: obscureText,
+            readOnly: readOnly,
             validator: validator,
-            style: const TextStyle(fontSize: AppFontSize.body),
+            style: TextStyle(
+              fontSize: textSize,
+              fontWeight: textSize == AppFontSize.body
+                  ? FontWeight.w400
+                  : FontWeight.w500,
+            ),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: const TextStyle(
                 fontSize: AppFontSize.body,
                 color: AppColors.hint,
               ),
-              prefixIcon: Icon(icon, color: AppColors.textDark),
+              prefixIcon: Icon(icon, color: iconColor),
               suffixIcon: suffix,
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(vertical: 14),

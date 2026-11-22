@@ -7,7 +7,7 @@ import '../domain/auth_service.dart';
 import '../domain/user_model.dart';
 
 class LoginScreen extends StatefulWidget {
-  // Called when login works, so main.dart can save token and role.
+  // Called when login works, so main.dart can save the user and role.
   final void Function(UserModel user) onLoggedIn;
 
   const LoginScreen({super.key, required this.onLoggedIn});
