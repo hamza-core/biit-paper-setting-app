@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../auth/domain/user_model.dart';
+import '../../datacell/presentation/datacell_home_screen.dart';
+import '../../datacell/presentation/import_upload_screen.dart';
+import '../../datacell/presentation/papers_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 
 // The screen shown after login. It has the bottom bar, and the tabs
@@ -52,9 +55,39 @@ class _MainShellState extends State<MainShell> {
     return [home, papers, profile]; // faculty
   }
 
+  void _goToTab(String label) {
+    List<NavItem> tabs = _tabsForRole();
+    for (int i = 0; i < tabs.length; i++) {
+      if (tabs[i].label == label) {
+        setState(() {
+          _currentIndex = i;
+        });
+      }
+    }
+  }
+
   Widget _buildBody(String label) {
     if (label == 'Profile') {
       return ProfileScreen(user: widget.user, onLogout: widget.onLogout);
+    }
+    if (widget.user.role == 'datacell') {
+      if (label == 'Home') {
+        return DatacellHomeScreen(
+          user: widget.user,
+          onLogout: widget.onLogout,
+          onOpenProfile: () => _goToTab('Profile'),
+          onImportDone: () => _goToTab('Home'),
+        );
+      }
+      if (label == 'Papers') {
+        return DatacellPapersScreen(onBack: () => _goToTab('Home'));
+      }
+      if (label == 'Data') {
+        return ImportUploadScreen(
+          onBack: () => _goToTab('Home'),
+          onDone: () => _goToTab('Home'),
+        );
+      }
     }
     // Replaced by the real screen when that feature is built.
     return SafeArea(child: Center(child: Text('$label (coming soon)')));
