@@ -9,6 +9,7 @@ import '../domain/faculty_models.dart';
 import '../domain/faculty_service.dart';
 import 'course_status_badge.dart';
 import 'covered_topics_screen.dart';
+import 'faculty_workspace_screen.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   final FacultyCourse course;
@@ -63,10 +64,16 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     }
   }
 
-  void _comingSoon(String name) {
-    // These screens are built in the next faculty features.
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('$name is coming soon')));
+  void _openWorkspace() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FacultyWorkspaceScreen(
+          course: widget.course,
+          teacherName: widget.teacherName,
+        ),
+      ),
+    );
   }
 
   @override
@@ -151,7 +158,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 borderRadius: BorderRadius.circular(15),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(15),
-                  onTap: () => _comingSoon('Workspace'),
+                  onTap: _openWorkspace,
                   child: const SizedBox(
                     width: 155,
                     height: 56,

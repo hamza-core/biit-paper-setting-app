@@ -1,3 +1,4 @@
+import '../../paper_review/domain/paper_review_models.dart';
 import '../domain/faculty_models.dart';
 
 // Layer 3 (data). Lists for now, the API later.
@@ -150,5 +151,97 @@ class FacultyRepository {
         course.teachers[i].marked = true;
       }
     }
+  }
+
+  // ---------- Paper workspace ----------
+
+  // The paper of each course, kept so the teacher can come back to it.
+  static final Map<String, PaperDetail> _papers = {};
+
+  Future<PaperDetail> getPaper(FacultyCourse course, String teacherName) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (!_papers.containsKey(course.code)) {
+      _papers[course.code] = _newPaper(course, teacherName);
+    }
+    return _papers[course.code]!;
+  }
+
+  PaperDetail _newPaper(FacultyCourse course, String teacherName) {
+    List<QuestionModel> questions = [];
+    List<QuestionModel> extra = [];
+
+    if (course.code == 'CS-301') {
+      // This course already has a written question and a director comment.
+      questions.add(
+        QuestionModel(
+          number: 1,
+          marks: 12,
+          text: 'Explain the phases of a compiler with a block diagram. Describe what each phase does using the expression: a = b + c * 5.',
+          submittedBy: 'Dr. Saeed Iqbal',
+          topic: 'Compiler Phases',
+          clos: ['CLO-1'],
+          difficulty: 'Medium',
+          comments: [
+            CommentModel(
+              authorName: 'Dr. Jameel Sawar',
+              authorRole: 'Director',
+              timeText: '1d ago',
+              text: 'Noted. Please also add labels to all transitions for clarity.',
+            ),
+          ],
+        ),
+      );
+      extra.add(
+        QuestionModel(
+          number: 1,
+          marks: 12,
+          text: 'Linked Lists: What is the primary structural advantage of a Linked List over a static Array?',
+          submittedBy: 'Dr. Saeed Iqbal',
+          topic: 'Syntax Analysis',
+          clos: ['CLO-1'],
+          difficulty: 'Medium',
+          comments: [],
+        ),
+      );
+    }
+    if (course.code == 'CS-303') {
+      // One blank slot and one slot given to another teacher.
+      questions.add(
+        QuestionModel(
+          number: 1,
+          marks: 5,
+          text: '',
+          submittedBy: teacherName,
+          topic: 'Compiler Phases',
+          clos: ['CLO-1'],
+          difficulty: 'Medium',
+          comments: [],
+        ),
+      );
+      questions.add(
+        QuestionModel(
+          number: 2,
+          marks: 5,
+          text: '',
+          submittedBy: teacherName,
+          topic: 'Compiler Phases',
+          clos: ['CLO-1'],
+          difficulty: 'Medium',
+          comments: [],
+          assignedTo: 'Dr. Saeed Iqbal',
+        ),
+      );
+    }
+
+    return PaperDetail(
+      code: course.code,
+      courseName: course.name,
+      version: 'v1',
+      examText: '${course.examText} • ${course.teachers.length} Teachers',
+      submittedBy: teacherName,
+      totalMarks: 60,
+      questions: questions,
+      extraQuestions: extra,
+    );
   }
 }

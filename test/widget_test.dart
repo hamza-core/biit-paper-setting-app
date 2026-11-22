@@ -569,4 +569,76 @@ void main() {
     // Back on course details: both teachers have marked now? (Amir did)
     expect(find.text('Course Details'), findsOneWidget);
   });
+
+  testWidgets('Faculty: write the paper in the workspace and submit', (
+    tester,
+  ) async {
+    usePhoneScreen(tester);
+    await tester.pumpWidget(const MyApp());
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'faculty@biit.edu.pk',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), '123456');
+    await tester.tap(find.text('Sign in'));
+    await tester.pump();
+    await settle(tester);
+
+    await tester.tap(find.text('Operating Systems'));
+    await settle(tester);
+    await tester.tap(find.text('Workspace'));
+    await settle(tester);
+    expect(find.text('Paper Workspace'), findsOneWidget);
+    expect(find.text('2 questions · 0/60 marks'), findsOneWidget);
+    expect(
+      find.text('How would you like to create this question?'),
+      findsOneWidget,
+    );
+
+    // A paper with unfinished questions cannot be submitted
+    await tester.tap(find.text('Proceed to Decision'));
+    await settle(tester);
+    expect(find.text('Q1 is not written yet'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 6));
+
+    // Create Q1 myself
+    await tester.tap(find.text('Create myself'));
+    await settle(tester);
+    expect(find.text('Create Question'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).at(1), 'Define a compiler.');
+    await tester.tap(find.text('Save Changes'));
+    await settle(tester);
+    expect(find.text('Define a compiler.'), findsOneWidget);
+    expect(find.text('5 marks • CLO-1'), findsOneWidget);
+    expect(find.text('2 questions · 5/60 marks'), findsOneWidget);
+
+    // Q2 is given to another teacher and still not written
+    await tester.tap(find.text('›'));
+    await settle(tester);
+    expect(find.textContaining('Assigned To'), findsOneWidget);
+    await tester.tap(find.text('Proceed to Decision'));
+    await settle(tester);
+    expect(find.text('Q2 is not written yet'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 6));
+
+    // Delete Q2 (goes to the trash), undo brings it back, redo removes it again
+    await tester.tap(find.byIcon(Icons.delete_outline));
+    await settle(tester);
+    expect(find.text('1 questions · 5/60 marks'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.undo));
+    await settle(tester);
+    expect(find.text('2 questions · 5/60 marks'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.redo));
+    await settle(tester);
+    expect(find.text('1 questions · 5/60 marks'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 6));
+
+    // Submit
+    await tester.tap(find.text('Proceed to Decision'));
+    await settle(tester);
+    expect(find.text('Paper Submitted!'), findsOneWidget);
+    await tester.tap(find.text('Go to Dashboard'));
+    await settle(tester);
+    expect(find.text('Dashboard'), findsOneWidget);
+  });
 }

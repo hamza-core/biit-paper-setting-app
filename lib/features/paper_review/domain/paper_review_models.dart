@@ -21,6 +21,8 @@ class QuestionModel {
   List<String> clos; // ["CLO-1", "CLO-2"]
   String difficulty; // Easy, Medium or Hard
   List<CommentModel> comments;
+  // Set when the question is given to another teacher to write.
+  String? assignedTo;
 
   QuestionModel({
     required this.number,
@@ -31,7 +33,18 @@ class QuestionModel {
     required this.clos,
     required this.difficulty,
     required this.comments,
+    this.assignedTo,
   });
+
+  // true when the question has been written (not a blank or assigned slot)
+  bool get isWritten => text.trim().isNotEmpty;
+
+  bool get hasDirectorComment {
+    for (int i = 0; i < comments.length; i++) {
+      if (comments[i].authorRole == 'Director') return true;
+    }
+    return false;
+  }
 }
 
 // Everything about one paper that the workspace screen shows.
@@ -41,9 +54,10 @@ class PaperDetail {
   final String version;
   final String examText; // Final Exam • Fall 2026 • 3 Teachers
   final String submittedBy;
-  final int totalMarks;
+  int totalMarks;
   final List<QuestionModel> questions;
   final List<QuestionModel> extraQuestions;
+  final List<QuestionModel> trash; // deleted questions (can be restored)
 
   PaperDetail({
     required this.code,
@@ -54,7 +68,8 @@ class PaperDetail {
     required this.totalMarks,
     required this.questions,
     required this.extraQuestions,
-  });
+    List<QuestionModel>? trash,
+  }) : trash = trash ?? [];
 }
 
 // One row of the "Detail" tab: which teacher covered the topic.
