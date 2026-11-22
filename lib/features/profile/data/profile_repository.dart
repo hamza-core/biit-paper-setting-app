@@ -27,12 +27,12 @@ class ProfileRepository {
     ),
     ProfileModel(
       email: 'director@biit.edu.pk',
-      name: 'Director',
+      name: 'Dr. Jameel Sawar',
       phone: '+92 300 1234567',
-      department: 'BIIT',
+      department: 'BIIT Administration',
       designation: 'Director',
-      subtitle: 'Director',
-      organization: 'BIIT',
+      subtitle: 'Director BIIT',
+      organization: 'BIIT Administration',
       avatar: 'assets/images/avatar_director.jpg',
     ),
     ProfileModel(

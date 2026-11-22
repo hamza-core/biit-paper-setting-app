@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import '../../auth/domain/user_model.dart';
 import '../../datacell/presentation/datacell_home_screen.dart';
+import '../../director/domain/director_models.dart';
+import '../../director/presentation/director_courses_screen.dart';
+import '../../director/presentation/director_home_screen.dart';
+import '../../director/presentation/director_papers_screen.dart';
 import '../../datacell/presentation/import_upload_screen.dart';
 import '../../datacell/presentation/papers_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
@@ -66,6 +70,15 @@ class _MainShellState extends State<MainShell> {
     }
   }
 
+  // The paper review screens are built in the next director feature.
+  void _openDirectorPaper(DirectorPaper paper) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${paper.courseName}: paper review is coming soon'),
+      ),
+    );
+  }
+
   Widget _buildBody(String label) {
     if (label == 'Profile') {
       return ProfileScreen(user: widget.user, onLogout: widget.onLogout);
@@ -87,6 +100,22 @@ class _MainShellState extends State<MainShell> {
           onBack: () => _goToTab('Home'),
           onDone: () => _goToTab('Home'),
         );
+      }
+    }
+    if (widget.user.role == 'director') {
+      if (label == 'Home') {
+        return DirectorHomeScreen(
+          user: widget.user,
+          onLogout: widget.onLogout,
+          onOpenProfile: () => _goToTab('Profile'),
+          onOpenPaper: _openDirectorPaper,
+        );
+      }
+      if (label == 'Papers') {
+        return DirectorPapersScreen(onOpenPaper: _openDirectorPaper);
+      }
+      if (label == 'Courses') {
+        return const DirectorCoursesScreen();
       }
     }
     // Replaced by the real screen when that feature is built.
