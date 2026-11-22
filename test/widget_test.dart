@@ -460,4 +460,57 @@ void main() {
     expect(find.text('CLO-1, CLO-2, CLO-3'), findsWidgets);
     expect(find.text('-- Select CLOs --'), findsNothing);
   });
+
+  testWidgets('Faculty: dashboard, papers and course details', (tester) async {
+    usePhoneScreen(tester);
+    await tester.pumpWidget(const MyApp());
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'faculty@biit.edu.pk',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), '123456');
+    await tester.tap(find.text('Sign in'));
+    await tester.pump();
+    await settle(tester);
+
+    // Dashboard
+    expect(find.text('Dashboard'), findsOneWidget);
+    expect(find.text('Papers to Set'), findsOneWidget);
+    expect(find.text('Changes Required'), findsOneWidget);
+    expect(find.text('Paper to set'), findsOneWidget);
+    expect(find.text('Questions to add'), findsOneWidget);
+
+    // Course details
+    await tester.tap(find.text('Data Structures'));
+    await settle(tester);
+    expect(find.text('Course Details'), findsOneWidget);
+    expect(find.text('2 of 3 teachers marked their topics.'), findsOneWidget);
+    expect(find.text('Waiting for 1 teacher.'), findsOneWidget);
+    await tester.tap(find.text('Common Topics'));
+    await settle(tester);
+    expect(find.text('Syntax Analysis'), findsOneWidget);
+    await tester.tap(find.text('Details'));
+    await settle(tester);
+    expect(find.text('Lexical Analysis'), findsOneWidget);
+    await tester.tap(find.text('Check Similarity'));
+    await settle(tester);
+    expect(find.text('Paper Similarity Report'), findsOneWidget);
+    await tester.tapAt(const Offset(10, 10)); // close the sheet
+    await settle(tester);
+    await tester.tap(find.byIcon(Icons.chevron_left));
+    await settle(tester);
+
+    // Papers tab: current, then archive
+    await tester.tap(find.text('Papers'));
+    await settle(tester);
+    expect(find.text('Current Papers'), findsOneWidget);
+    await tester.tap(find.text('Archive'));
+    await settle(tester);
+    expect(find.text('Past Papers'), findsOneWidget);
+    expect(find.text('Programming Fundamentals'), findsOneWidget);
+    await tester.tap(find.text('Rejected').first);
+    await settle(tester);
+    expect(find.text('Technical Writing'), findsOneWidget);
+    expect(find.text('Programming Fundamentals'), findsNothing);
+  });
 }
