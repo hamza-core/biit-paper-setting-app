@@ -8,6 +8,9 @@ import '../../paper_review/presentation/edit_question_screen.dart';
 import '../../paper_review/presentation/similarity_sheet.dart';
 import '../domain/faculty_models.dart';
 import '../domain/faculty_service.dart';
+import 'paper_preview_screen.dart';
+import 'trash_screen.dart';
+import 'wishlist_screen.dart';
 
 // A copy of the lists, used for undo and redo.
 class _Snapshot {
@@ -224,14 +227,36 @@ class _FacultyWorkspaceScreenState extends State<FacultyWorkspaceScreen> {
       ],
     );
     if (choice == null || !mounted) return;
-    // Built in the next faculty feature.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${choice[0].toUpperCase()}${choice.substring(1)} is coming soon',
+    if (choice == 'wishlist') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const WishlistScreen()),
+      );
+    }
+    if (choice == 'preview') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PaperPreviewScreen(
+            paper: _paper!,
+            teacherName: widget.teacherName,
+          ),
         ),
-      ),
-    );
+      );
+    }
+    if (choice == 'trash') {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => TrashScreen(papers: [_paper!])),
+      );
+      // Questions may have been restored.
+      if (mounted) {
+        setState(() {
+          if (_index >= _list().length) _index = _list().length - 1;
+          if (_index < 0) _index = 0;
+        });
+      }
+    }
   }
 
   Future<void> _submit() async {

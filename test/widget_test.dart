@@ -641,4 +641,91 @@ void main() {
     await settle(tester);
     expect(find.text('Dashboard'), findsOneWidget);
   });
+
+  testWidgets('Faculty: wishlist, trash and paper preview', (tester) async {
+    usePhoneScreen(tester);
+    await tester.pumpWidget(const MyApp());
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'faculty@biit.edu.pk',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), '123456');
+    await tester.tap(find.text('Sign in'));
+    await tester.pump();
+    await settle(tester);
+
+    // Wishlist from the menu
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await settle(tester);
+    await tester.tap(find.text('Wishlist'));
+    await settle(tester);
+    expect(find.text('Wishlist'), findsOneWidget);
+    expect(find.text('More practice on SQL joins.'), findsOneWidget);
+
+    // Adding an empty wish is refused, then add a real one
+    await tester.tap(find.byIcon(Icons.add));
+    await settle(tester);
+    expect(find.text('Add a wish'), findsOneWidget);
+    await tester.tap(find.text('Add to wishlist'));
+    await settle(tester);
+    expect(find.text('Please write your wish'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'Add a question on trees.');
+    await tester.tap(find.text('Add to wishlist'));
+    await settle(tester);
+    expect(find.text('Add a question on trees.'), findsOneWidget);
+    expect(find.textContaining('(3)'), findsOneWidget);
+
+    // Undo removes it, redo brings it back
+    await tester.tap(find.byIcon(Icons.undo));
+    await settle(tester);
+    expect(find.text('Add a question on trees.'), findsNothing);
+    await tester.tap(find.byIcon(Icons.redo));
+    await settle(tester);
+    expect(find.text('Add a question on trees.'), findsOneWidget);
+
+    // Edit the first wish
+    await tester.tap(find.text('Edit ').first);
+    await settle(tester);
+    expect(find.text('Edit wish'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'Add 2 questions on trees.');
+    await tester.tap(find.text('Save wish'));
+    await settle(tester);
+    expect(find.text('Add 2 questions on trees.'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.chevron_left));
+    await settle(tester);
+
+    // Trash of all courses: the question deleted in the workspace test is here
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await settle(tester);
+    await tester.tap(find.text('Trash'));
+    await settle(tester);
+    expect(find.textContaining('My Trash'), findsOneWidget);
+    expect(find.textContaining('(1)'), findsOneWidget);
+    await tester.tap(find.text('Restore '));
+    await settle(tester);
+    expect(find.text('The trash is empty'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.undo));
+    await settle(tester);
+    expect(find.textContaining('(1)'), findsOneWidget);
+    await tester.tap(find.text('Restore '));
+    await settle(tester);
+    await tester.tap(find.byIcon(Icons.chevron_left));
+    await settle(tester);
+
+    // Paper preview from the workspace menu
+    await tester.tap(find.text('Operating Systems'));
+    await settle(tester);
+    await tester.tap(find.text('Workspace'));
+    await settle(tester);
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await settle(tester);
+    await tester.tap(find.text('Preview'));
+    await settle(tester);
+    expect(find.text('Paper Preview'), findsOneWidget);
+    expect(find.text('Define a compiler.'), findsOneWidget);
+    expect(find.text('100%'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.add));
+    await settle(tester);
+    expect(find.text('125%'), findsOneWidget);
+  });
 }

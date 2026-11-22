@@ -279,4 +279,53 @@ class FacultyService {
     DateTime now = DateTime.now();
     return '${now.day} ${_months[now.month - 1]} ${now.year}';
   }
+
+  // ---------- Wishlist ----------
+
+  Future<List<String>> getWishes() {
+    return _repository.getWishes();
+  }
+
+  Future<void> saveWishes(List<String> wishes) {
+    return _repository.saveWishes(wishes);
+  }
+
+  // Returns an error text, or null when the wish can be saved.
+  String? validateWish(String text) {
+    if (text.trim().isEmpty) return 'Please write your wish';
+    return null;
+  }
+
+  // ---------- Trash ----------
+
+  Future<List<PaperDetail>> getAllPapers(String teacherName) {
+    return _repository.getAllPapers(teacherName);
+  }
+
+  // Puts a deleted question back at the end of the paper.
+  void restore(PaperDetail paper, QuestionModel question) {
+    paper.trash.remove(question);
+    paper.questions.add(question);
+    renumber(paper.questions);
+  }
+
+  // A copy goes to the paper, the original stays in the trash.
+  void copyToPaper(PaperDetail paper, QuestionModel question) {
+    paper.questions.add(
+      QuestionModel(
+        number: paper.questions.length + 1,
+        marks: question.marks,
+        text: question.text,
+        submittedBy: question.submittedBy,
+        topic: question.topic,
+        clos: List<String>.from(question.clos),
+        difficulty: question.difficulty,
+        comments: [],
+      ),
+    );
+  }
+
+  void deleteForever(PaperDetail paper, QuestionModel question) {
+    paper.trash.remove(question);
+  }
 }
