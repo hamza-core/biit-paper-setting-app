@@ -15,6 +15,13 @@ class AppColors {
   static const Color inactiveTab = Color(0xFFAAAAAA);
   static const Color signOutBackground = Color(0xFFFADBD8);
   static const Color signOutText = Color(0xFF900C0F);
+  static const Color cardBorder = Color(0xFFE0DED6);
+  static const Color successGreen = Color(0xFF2E7D32);
+  static const Color successBackground = Color(0xFFE8F5E9);
+  static const Color warningBackground = Color(0xFFFFEBEE);
+  static const Color warningText = Color(0xFFE65100);
+  static const Color disabledButton = Color(0xFFE0DBCE);
+  static const Color deleteRed = Color(0xFFC62828);
 }
 
 class AppSpacing {
