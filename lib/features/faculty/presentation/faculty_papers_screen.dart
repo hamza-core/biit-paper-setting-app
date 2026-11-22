@@ -8,7 +8,9 @@ import 'faculty_home_screen.dart';
 
 // Papers tab: Current (my courses) and Archive (past papers).
 class FacultyPapersScreen extends StatefulWidget {
-  const FacultyPapersScreen({super.key});
+  final String teacherName; // the logged in teacher
+
+  const FacultyPapersScreen({super.key, required this.teacherName});
 
   @override
   State<FacultyPapersScreen> createState() => _FacultyPapersScreenState();
@@ -268,8 +270,10 @@ class _FacultyPapersScreenState extends State<FacultyPapersScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        CourseDetailsScreen(course: _courses[i]),
+                    builder: (context) => CourseDetailsScreen(
+                      course: _courses[i],
+                      teacherName: widget.teacherName,
+                    ),
                   ),
                 );
               },
