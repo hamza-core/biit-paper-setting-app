@@ -5,6 +5,8 @@ import '../../auth/domain/user_model.dart';
 import '../../datacell/presentation/datacell_home_screen.dart';
 import '../../director/domain/director_models.dart';
 import '../../director/domain/director_service.dart';
+import '../../hod/presentation/clo_rules_screen.dart';
+import '../../hod/presentation/hod_home_screen.dart';
 import '../../paper_review/presentation/paper_workspace_screen.dart';
 import '../../director/presentation/director_courses_screen.dart';
 import '../../director/presentation/director_home_screen.dart';
@@ -99,6 +101,13 @@ class _MainShellState extends State<MainShell> {
     );
   }
 
+  // The HOD's paper review is built in the next HOD feature.
+  void _openHodPaper(DirectorPaper paper) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${paper.courseName}: CLO review is coming soon')),
+    );
+  }
+
   Widget _buildBody(String label) {
     if (label == 'Profile') {
       return ProfileScreen(user: widget.user, onLogout: widget.onLogout);
@@ -140,6 +149,24 @@ class _MainShellState extends State<MainShell> {
       }
       if (label == 'Courses') {
         return const DirectorCoursesScreen();
+      }
+    }
+    if (widget.user.role == 'hod') {
+      if (label == 'Home') {
+        return HodHomeScreen(
+          user: widget.user,
+          onLogout: widget.onLogout,
+          onOpenProfile: () => _goToTab('Profile'),
+          onViewAllPapers: () => _goToTab('Papers'),
+          onOpenPaper: _openHodPaper,
+        );
+      }
+      if (label == 'Papers') {
+        // The HOD sees the same paper lists as the director.
+        return DirectorPapersScreen(onOpenPaper: _openHodPaper);
+      }
+      if (label == 'CLO Rule') {
+        return const CloRulesScreen();
       }
     }
     // Replaced by the real screen when that feature is built.
