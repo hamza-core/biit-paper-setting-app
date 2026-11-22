@@ -127,6 +127,22 @@ class DirectorRepository {
     // Later: call the API to send the reminder.
   }
 
+  Future<void> saveDecision(
+    DirectorPaper paper,
+    bool approved,
+    String comment,
+    String dateText,
+  ) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    // Later: send the decision and comment to the API.
+    paper.status = approved ? 'approved' : 'rejected';
+    paper.dateText = dateText;
+    if (!approved) {
+      // Rejected papers move to the archive.
+      paper.isArchived = true;
+    }
+  }
+
   Future<List<CourseModel>> getCourses() async {
     await Future.delayed(const Duration(milliseconds: 300));
     return _courses;

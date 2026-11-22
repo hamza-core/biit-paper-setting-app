@@ -208,4 +208,90 @@ void main() {
     await settle(tester);
     expect(find.text('1 courses shown'), findsOneWidget);
   });
+
+  testWidgets('Director reviews a paper and approves it', (tester) async {
+    usePhoneScreen(tester);
+    await tester.pumpWidget(const MyApp());
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'director@biit.edu.pk',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), '123456');
+    await tester.tap(find.text('Sign in'));
+    await tester.pump();
+    await settle(tester);
+
+    // Open the paper from the To Review tab
+    await tester.tap(find.text('Review Paper'));
+    await settle(tester);
+    expect(find.text('Paper Workspace'), findsOneWidget);
+    expect(find.text('3 questions · 30/60 marks'), findsOneWidget);
+    expect(find.text('Q1 • 10 Marks'), findsOneWidget);
+
+    // Next question with the arrow
+    await tester.tap(find.text('›'));
+    await settle(tester);
+    expect(find.text('Q2 • 12 Marks'), findsOneWidget);
+
+    // Covered topics sheet and CLO grid
+    await tester.tap(find.text('Check Covered Topics  & CLO Grid'));
+    await settle(tester);
+    expect(find.text('Regular Expressions'), findsOneWidget);
+    await tester.tap(find.text('CLO Grid'));
+    await settle(tester);
+    expect(find.text('CLO Summary'), findsOneWidget);
+    await tester.tapAt(const Offset(10, 10)); // close the sheet
+    await settle(tester);
+
+    // Edit Q1 and add a comment
+    await tester.tap(find.text('‹'));
+    await settle(tester);
+    await tester.tap(find.text('Edit / Comment'));
+    await settle(tester);
+    expect(find.text('Edit Question'), findsOneWidget);
+    await tester.tap(find.text('Comments'));
+    await settle(tester);
+    expect(
+      find.text(
+        'Noted. Please also add labels to all transitions for clarity.',
+      ),
+      findsOneWidget,
+    );
+    await tester.enterText(find.byType(TextField).last, 'Please check marks');
+    await tester.tap(find.text('Send'));
+    await settle(tester);
+    expect(find.text('Please check marks'), findsOneWidget);
+    await tester.tap(find.text('Question'));
+    await settle(tester);
+    await tester.enterText(find.byType(TextField).at(0), '12');
+    await tester.tap(find.text('Save Changes'));
+    await settle(tester);
+    expect(find.text('Q1 • 12 Marks'), findsOneWidget);
+    expect(find.text('2 comments'), findsOneWidget);
+
+    // Decision: reject needs a comment, approve works
+    await tester.tap(find.text('Proceed to Decision'));
+    await settle(tester);
+    expect(find.text('Paper Decision'), findsOneWidget);
+    await tester.tap(find.text('Reject'));
+    await settle(tester);
+    await tester.tap(find.text('Confirm Decision'));
+    await settle(tester);
+    expect(
+      find.text('Please add a comment to reject the paper'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Approve'));
+    await settle(tester);
+    await tester.tap(find.text('Confirm Decision'));
+    await settle(tester);
+
+    // Back on the dashboard: the paper moved to Approved
+    expect(find.text('Welcome, Director'), findsOneWidget);
+    expect(find.text('Review Paper'), findsNothing);
+    await tester.pump(const Duration(seconds: 6));
+    await tester.tap(find.text('Approved').last);
+    await settle(tester);
+    expect(find.text('Compiler Construction'), findsOneWidget);
+  });
 }
