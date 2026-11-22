@@ -9,6 +9,12 @@ class AppColors {
   static const Color hint = Color(0x66000000); // black 40%
   static const Color white = Color(0xFFFFFFFF);
   static const Color shadow = Color(0x40000000); // black 25%
+  static const Color border = Color(0xFFE0DBCE);
+  static const Color greyText = Color(0xFF666666);
+  static const Color lightGreyText = Color(0xFF999999);
+  static const Color inactiveTab = Color(0xFFAAAAAA);
+  static const Color signOutBackground = Color(0xFFFADBD8);
+  static const Color signOutText = Color(0xFF900C0F);
 }
 
 class AppSpacing {
@@ -27,7 +33,13 @@ class AppRadius {
 }
 
 class AppFontSize {
+  static const double tiny = 10;
+  static const double caption = 12;
+  static const double label = 13;
+  static const double medium = 16;
   static const double small = 15;
+  static const double heading = 20;
+  static const double profileName = 22;
   static const double body = 18;
   static const double button = 20;
   static const double subtitle = 20;
@@ -35,6 +47,9 @@ class AppFontSize {
 }
 
 class AppShadows {
+  static const List<BoxShadow> card = [
+    BoxShadow(color: Color(0x1A000000), blurRadius: 4, offset: Offset(0, 2)),
+  ];
   static const List<BoxShadow> soft = [
     BoxShadow(color: AppColors.shadow, blurRadius: 10, offset: Offset(0, 4)),
   ];

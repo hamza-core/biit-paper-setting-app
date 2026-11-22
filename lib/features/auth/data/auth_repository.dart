@@ -39,7 +39,6 @@ class AuthRepository {
           name: u['name']!,
           email: u['email']!,
           role: u['role']!,
-          token: 'dummy-token-${u['role']}',
         );
       }
     }
