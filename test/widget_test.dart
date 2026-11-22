@@ -349,4 +349,69 @@ void main() {
     expect(find.text('No Active Handover'), findsOneWidget);
     expect(find.text('Dr. Munir'), findsOneWidget);
   });
+
+  testWidgets('HOD: dashboard, assign paper and CLO rules', (tester) async {
+    usePhoneScreen(tester);
+    await tester.pumpWidget(const MyApp());
+    await tester.enterText(find.byType(TextFormField).at(0), 'hod@biit.edu.pk');
+    await tester.enterText(find.byType(TextFormField).at(1), '123456');
+    await tester.tap(find.text('Sign in'));
+    await tester.pump();
+    await settle(tester);
+
+    // Dashboard
+    expect(find.text('HOD Dashboard'), findsOneWidget);
+    expect(find.text('5'), findsOneWidget);
+    expect(find.text('55'), findsOneWidget);
+    expect(find.text('My Activities'), findsOneWidget);
+
+    // Assign Paper: assigning without a date shows an error
+    await tester.tap(find.text('Assign Paper'));
+    await settle(tester);
+    expect(find.text('7 Courses'), findsOneWidget);
+    await tester.tap(find.text('Assign').first);
+    await settle(tester);
+    expect(find.text('Please select a date'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 6));
+
+    // Pick a date and a teacher, then assign
+    await tester.tap(find.text('-- Select Date --').first);
+    await settle(tester);
+    await tester.tap(find.text('OK'));
+    await settle(tester);
+    await tester.tap(find.text('-- Select Teacher --').first);
+    await settle(tester);
+    await tester.tap(find.text('Nauman Iqbal').last);
+    await settle(tester);
+    await tester.tap(find.text('Assign').first);
+    await settle(tester);
+    expect(
+      find.text('Data Structures assigned to Nauman Iqbal'),
+      findsOneWidget,
+    );
+    await tester.pump(const Duration(seconds: 6));
+
+    // Semester filter
+    await tester.tap(find.text('Semester 1'));
+    await settle(tester);
+    expect(find.text('2 Courses'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.chevron_left));
+    await settle(tester);
+
+    // Papers tab is the shared papers list
+    await tester.tap(find.text('Papers'));
+    await settle(tester);
+    expect(find.text('Current Papers'), findsOneWidget);
+
+    // CLO Rule tab: choose CLOs for all courses
+    await tester.tap(find.text('CLO Rule'));
+    await settle(tester);
+    expect(find.text('CLO Rules'), findsOneWidget);
+    await tester.tap(find.text('-- Select CLO for all Subjects --'));
+    await settle(tester);
+    await tester.tap(find.text('CLO-1, CLO-2, CLO-3').last);
+    await settle(tester);
+    expect(find.text('CLO-1, CLO-2, CLO-3'), findsWidgets);
+    expect(find.text('-- Select CLOs --'), findsNothing);
+  });
 }
