@@ -7,6 +7,9 @@ import '../../director/domain/director_models.dart';
 import '../../director/domain/director_service.dart';
 import '../../hod/presentation/clo_rules_screen.dart';
 import '../../hod/presentation/hod_home_screen.dart';
+import '../../paper_review/domain/paper_review_models.dart';
+import '../../paper_review/domain/paper_review_service.dart';
+import '../../paper_review/presentation/covered_topics_sheet.dart';
 import '../../paper_review/presentation/paper_workspace_screen.dart';
 import '../../director/presentation/director_courses_screen.dart';
 import '../../director/presentation/director_home_screen.dart';
@@ -101,10 +104,30 @@ class _MainShellState extends State<MainShell> {
     );
   }
 
-  // The HOD's paper review is built in the next HOD feature.
-  void _openHodPaper(DirectorPaper paper) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${paper.courseName}: CLO review is coming soon')),
+  int _hodVersion = 0; // changes when a CLO review is saved, to reload lists
+
+  // The HOD opens the "Review CLO Grid" sheet. Papers that are not waiting
+  // for review open the same sheet without the decision.
+  Future<void> _openHodPaper(DirectorPaper paper) async {
+    PaperDetail detail = await PaperReviewService().getPaper(
+      code: paper.code,
+      courseName: paper.courseName,
+      submittedBy: paper.teacher,
+    );
+    if (!mounted) return;
+    bool canReview = paper.status == 'toReview' && !paper.cloChecked;
+    showCoveredTopicsSheet(
+      context,
+      detail,
+      onConfirmDecision: canReview
+          ? (approve, comment) async {
+              await DirectorService().reviewClo(paper, approve, comment);
+              if (!mounted) return;
+              setState(() {
+                _hodVersion = _hodVersion + 1;
+              });
+            }
+          : null,
     );
   }
 
@@ -154,6 +177,7 @@ class _MainShellState extends State<MainShell> {
     if (widget.user.role == 'hod') {
       if (label == 'Home') {
         return HodHomeScreen(
+          key: ValueKey('hod-home-$_hodVersion'),
           user: widget.user,
           onLogout: widget.onLogout,
           onOpenProfile: () => _goToTab('Profile'),
@@ -163,7 +187,10 @@ class _MainShellState extends State<MainShell> {
       }
       if (label == 'Papers') {
         // The HOD sees the same paper lists as the director.
-        return DirectorPapersScreen(onOpenPaper: _openHodPaper);
+        return DirectorPapersScreen(
+          key: ValueKey('hod-papers-$_hodVersion'),
+          onOpenPaper: _openHodPaper,
+        );
       }
       if (label == 'CLO Rule') {
         return const CloRulesScreen();

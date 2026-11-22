@@ -50,6 +50,7 @@ class _HodHomeScreenState extends State<HodHomeScreen> {
     List<DirectorPaper> papers = await _paperService.getPapers(
       archived: false,
       statusFilter: 'toReview',
+      cloPending: true,
     );
     if (!mounted) return;
     setState(() {
