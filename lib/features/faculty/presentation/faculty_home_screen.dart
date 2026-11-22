@@ -8,6 +8,8 @@ import '../domain/faculty_models.dart';
 import '../domain/faculty_service.dart';
 import 'course_details_screen.dart';
 import 'course_status_badge.dart';
+import 'trash_screen.dart';
+import 'wishlist_screen.dart';
 
 class FacultyHomeScreen extends StatefulWidget {
   final UserModel user;
@@ -89,13 +91,20 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
     if (!mounted) return;
     if (choice == 'profile') widget.onOpenProfile();
     if (choice == 'logout') widget.onLogout();
-    if (choice == 'wishlist' || choice == 'trash') {
-      // Built in the faculty workspace feature.
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${choice == 'wishlist' ? 'Wishlist' : 'Trash'} is coming soon',
-          ),
+    if (choice == 'wishlist') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const WishlistScreen()),
+      );
+    }
+    if (choice == 'trash') {
+      // The trash of all my courses
+      List papers = await _service.getAllPapers(widget.user.name);
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TrashScreen(papers: List.from(papers)),
         ),
       );
     }

@@ -244,4 +244,34 @@ class FacultyRepository {
       extraQuestions: extra,
     );
   }
+
+  // ---------- Wishlist ----------
+
+  static final List<String> _wishes = [
+    'More practice on SQL joins.',
+    'Must question from graphs.',
+  ];
+
+  Future<List<String>> getWishes() async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    return List<String>.from(_wishes);
+  }
+
+  Future<void> saveWishes(List<String> wishes) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    // Later: send the wishlist to the API.
+    _wishes
+      ..clear()
+      ..addAll(wishes);
+  }
+
+  // The papers of all courses (used by the trash of the whole account).
+  Future<List<PaperDetail>> getAllPapers(String teacherName) async {
+    List<FacultyCourse> courses = await getCourses();
+    List<PaperDetail> papers = [];
+    for (int i = 0; i < courses.length; i++) {
+      papers.add(await getPaper(courses[i], teacherName));
+    }
+    return papers;
+  }
 }
