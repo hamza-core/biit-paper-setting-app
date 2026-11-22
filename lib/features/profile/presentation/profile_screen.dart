@@ -4,6 +4,7 @@ import '../../../core/design_tokens.dart';
 import '../../auth/domain/user_model.dart';
 import '../domain/profile_model.dart';
 import '../domain/profile_service.dart';
+import '../../role_handover/presentation/role_handover_screen.dart';
 import 'edit_profile_screen.dart';
 import 'notifications_screen.dart';
 
@@ -221,40 +222,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
               borderRadius: BorderRadius.circular(AppRadius.card),
               boxShadow: AppShadows.card,
             ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(AppRadius.card),
-              onTap: _openNotifications,
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.notifications_none,
-                      size: 20,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: AppSpacing.m),
-                    Expanded(
-                      child: Text(
-                        _service.notificationsLabel(widget.user.role),
-                        style: const TextStyle(
-                          fontSize: AppFontSize.small,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textDark,
-                        ),
-                      ),
-                    ),
-                    const Icon(
-                      Icons.chevron_right,
-                      size: 20,
-                      color: AppColors.greyText,
-                    ),
-                  ],
+            child: Column(
+              children: [
+                _settingRow(
+                  icon: Icons.notifications_none,
+                  label: _service.notificationsLabel(widget.user.role),
+                  onTap: _openNotifications,
+                  showLine: widget.user.role == 'director',
                 ),
-              ),
+                // Only the director can hand over the role.
+                if (widget.user.role == 'director')
+                  _settingRow(
+                    icon: Icons.link,
+                    label: 'Role Handover',
+                    onTap: _openRoleHandover,
+                    showLine: false,
+                  ),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _openRoleHandover() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const RoleHandoverScreen()),
+    );
+  }
+
+  Widget _settingRow({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required bool showLine,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppRadius.card),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        decoration: BoxDecoration(
+          border: showLine
+              ? const Border(bottom: BorderSide(color: AppColors.border))
+              : null,
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: AppColors.primary),
+            const SizedBox(width: AppSpacing.m),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: AppFontSize.small,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: AppColors.greyText,
+            ),
+          ],
+        ),
       ),
     );
   }
