@@ -1,3 +1,4 @@
+import '../../paper_review/domain/paper_review_models.dart';
 import '../data/faculty_repository.dart';
 import 'faculty_models.dart';
 
@@ -170,5 +171,112 @@ class FacultyService {
     });
     if (!any) throw 'Please mark at least one topic';
     return _repository.saveSelections(course, teacherName, selections);
+  }
+
+  // ---------- Paper workspace ----------
+
+  Future<PaperDetail> getPaper(FacultyCourse course, String teacherName) {
+    return _repository.getPaper(course, teacherName);
+  }
+
+  int usedMarks(PaperDetail paper) {
+    int total = 0;
+    for (int i = 0; i < paper.questions.length; i++) {
+      if (paper.questions[i].isWritten) {
+        total = total + paper.questions[i].marks;
+      }
+    }
+    return total;
+  }
+
+  // Returns an error text, or null when the number is fine.
+  String? validateTotalMarks(PaperDetail paper, String text) {
+    int? marks = int.tryParse(text.trim());
+    if (marks == null || marks <= 0) {
+      return 'Total marks must be a number above 0';
+    }
+    if (marks < usedMarks(paper)) {
+      return 'Total marks cannot be less than the marks already used';
+    }
+    return null;
+  }
+
+  // A new empty question that the teacher can write or give to someone.
+  QuestionModel newBlankQuestion(List<QuestionModel> list, String teacherName) {
+    return QuestionModel(
+      number: list.length + 1,
+      marks: 5,
+      text: '',
+      submittedBy: teacherName,
+      topic: 'Compiler Phases',
+      clos: ['CLO-1'],
+      difficulty: 'Medium',
+      comments: [],
+    );
+  }
+
+  void renumber(List<QuestionModel> list) {
+    for (int i = 0; i < list.length; i++) {
+      list[i].number = i + 1;
+    }
+  }
+
+  // Moves an extra question to the end of the full paper.
+  void moveToPaper(PaperDetail paper, QuestionModel question) {
+    paper.extraQuestions.remove(question);
+    paper.questions.add(question);
+    renumber(paper.extraQuestions);
+    renumber(paper.questions);
+  }
+
+  // Deleting puts the question in the trash, it can be restored.
+  void moveToTrash(PaperDetail paper, QuestionModel question) {
+    paper.questions.remove(question);
+    paper.extraQuestions.remove(question);
+    paper.trash.add(question);
+    renumber(paper.questions);
+    renumber(paper.extraQuestions);
+  }
+
+  // Returns an error text, or null when the paper can be submitted.
+  String? validateSubmit(PaperDetail paper) {
+    if (paper.questions.isEmpty) return 'Add at least one question first';
+    for (int i = 0; i < paper.questions.length; i++) {
+      if (!paper.questions[i].isWritten) {
+        return 'Q${paper.questions[i].number} is not written yet';
+      }
+    }
+    if (usedMarks(paper) > paper.totalMarks) {
+      return 'The questions have more marks than the total marks';
+    }
+    return null;
+  }
+
+  Future<void> submitPaper(PaperDetail paper) async {
+    String? error = validateSubmit(paper);
+    if (error != null) throw error;
+    await Future.delayed(const Duration(milliseconds: 300));
+    // Later: send the paper to the API.
+  }
+
+  final List<String> _months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  // "6 Oct 2026"
+  String todayText() {
+    DateTime now = DateTime.now();
+    return '${now.day} ${_months[now.month - 1]} ${now.year}';
   }
 }
