@@ -17,7 +17,7 @@ class AuthRepository {
       'role': 'faculty',
     },
     {
-      'name': 'Director',
+      'name': 'Dr. Jameel Sawar',
       'email': 'director@biit.edu.pk',
       'password': '123456',
       'role': 'director',

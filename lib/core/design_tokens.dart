@@ -22,6 +22,12 @@ class AppColors {
   static const Color warningText = Color(0xFFE65100);
   static const Color disabledButton = Color(0xFFE0DBCE);
   static const Color deleteRed = Color(0xFFC62828);
+  static const Color reviewBackground = Color(0xFFE6F1FB);
+  static const Color reviewText = Color(0xFF0C447C);
+  static const Color rejectedText = Color(0xFFB71C1C);
+  static const Color pillTrack = Color(0xFFE8E4D9);
+  static const Color heroCard = Color(0xFF145550);
+  static const Color mutedTab = Color(0xFF8A8A8A);
 }
 
 class AppSpacing {

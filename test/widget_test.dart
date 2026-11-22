@@ -157,4 +157,55 @@ void main() {
     await settle(tester);
     expect(find.text('Dashboard'), findsOneWidget);
   });
+
+  testWidgets('Director: dashboard, papers and courses', (tester) async {
+    usePhoneScreen(tester);
+    await tester.pumpWidget(const MyApp());
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'director@biit.edu.pk',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), '123456');
+    await tester.tap(find.text('Sign in'));
+    await tester.pump();
+    await settle(tester);
+
+    // Dashboard
+    expect(find.text('Welcome, Director'), findsOneWidget);
+    expect(find.text('60'), findsOneWidget);
+    expect(find.text('50/60'), findsOneWidget);
+    expect(find.text('Compiler Construction'), findsOneWidget);
+    await tester.tap(find.text('Not Submitted').last);
+    await settle(tester);
+    expect(find.text('Artificial Intelligence'), findsOneWidget);
+    await tester.tap(find.text('Send reminder'));
+    await settle(tester);
+    expect(find.text('Reminder sent to Dr. Sadaf Gul'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 6));
+
+    // Papers: current, then archive
+    await tester.tap(find.text('Papers'));
+    await settle(tester);
+    expect(find.text('Current Papers'), findsOneWidget);
+    await tester.tap(find.text('Archive'));
+    await settle(tester);
+    expect(find.text('Archived Papers'), findsOneWidget);
+    expect(find.text('Programming Fundamentals'), findsOneWidget);
+    await tester.tap(find.text('Rejected').first);
+    await settle(tester);
+    expect(find.text('Expository Writing'), findsOneWidget);
+    expect(find.text('Programming Fundamentals'), findsNothing);
+
+    // Courses: open a card
+    await tester.tap(find.text('Courses'));
+    await settle(tester);
+    expect(find.text('4 courses shown'), findsOneWidget);
+    await tester.tap(find.text('Show ').first);
+    await settle(tester);
+    expect(find.text('Mr. Amir Rasheed'), findsOneWidget);
+    expect(find.text('AR'), findsOneWidget);
+    await tester.tap(find.text('SE Department'));
+    await settle(tester);
+    expect(find.text('1 courses shown'), findsOneWidget);
+  });
 }
