@@ -21,6 +21,8 @@ class DirectorService {
     String search = '',
     String? session,
     String? exam,
+    bool cloPending =
+        false, // true = hide papers whose CLO grid the HOD approved
   }) async {
     List<DirectorPaper> all = await _repository.getPapers();
     List<DirectorPaper> result = [];
@@ -29,6 +31,7 @@ class DirectorService {
     for (int i = 0; i < all.length; i++) {
       DirectorPaper paper = all[i];
       if (paper.isArchived != archived) continue;
+      if (cloPending && paper.cloChecked) continue;
       if (statusFilter != 'all' && paper.status != statusFilter) continue;
       if (session != null && paper.session != session) continue;
       if (exam != null && paper.exam != exam) continue;
@@ -54,6 +57,14 @@ class DirectorService {
       throw 'Please add a comment to reject the paper';
     }
     return _repository.saveDecision(paper, approved, comment, _todayText());
+  }
+
+  // The HOD approves or rejects the CLO grid of a paper.
+  Future<void> reviewClo(DirectorPaper paper, bool approved, String comment) {
+    if (!approved && comment.trim().isEmpty) {
+      throw 'Please add a comment to reject the paper';
+    }
+    return _repository.saveCloReview(paper, approved, comment, _todayText());
   }
 
   String _todayText() {

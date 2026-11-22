@@ -127,6 +127,25 @@ class DirectorRepository {
     // Later: call the API to send the reminder.
   }
 
+  // The HOD's CLO review: approving lets the paper go on to the director,
+  // rejecting sends the paper to the archive.
+  Future<void> saveCloReview(
+    DirectorPaper paper,
+    bool approved,
+    String comment,
+    String dateText,
+  ) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    // Later: send the CLO review and comment to the API.
+    if (approved) {
+      paper.cloChecked = true;
+    } else {
+      paper.status = 'rejected';
+      paper.dateText = dateText;
+      paper.isArchived = true;
+    }
+  }
+
   Future<void> saveDecision(
     DirectorPaper paper,
     bool approved,

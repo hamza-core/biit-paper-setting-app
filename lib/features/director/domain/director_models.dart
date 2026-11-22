@@ -8,6 +8,7 @@ class DirectorPaper {
   final String session;
   final String exam;
   bool isArchived;
+  bool cloChecked; // true after the HOD approved the CLO grid
 
   DirectorPaper({
     required this.code,
@@ -18,6 +19,7 @@ class DirectorPaper {
     required this.session,
     required this.exam,
     required this.isArchived,
+    this.cloChecked = false,
   });
 }
 

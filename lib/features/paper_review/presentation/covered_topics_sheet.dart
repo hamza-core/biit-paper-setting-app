@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/design_tokens.dart';
+import '../../../core/widgets/app_button.dart';
 import '../domain/paper_review_models.dart';
 import '../domain/paper_review_service.dart';
 
 // Opens the "Covered Topics & CLO Grid" bottom sheet.
-void showCoveredTopicsSheet(BuildContext context, PaperDetail paper) {
+// When onConfirmDecision is given the sheet is the HOD's "Review CLO Grid":
+// the CLO Grid tab then also has the Approve / Reject decision.
+void showCoveredTopicsSheet(
+  BuildContext context,
+  PaperDetail paper, {
+  Future<void> Function(bool approve, String comment)? onConfirmDecision,
+}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -13,17 +20,26 @@ void showCoveredTopicsSheet(BuildContext context, PaperDetail paper) {
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder: (context) => SizedBox(
-      height: MediaQuery.of(context).size.height * 0.85,
-      child: _CoveredTopicsSheet(paper: paper),
+    builder: (context) => Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.9,
+        child: _CoveredTopicsSheet(
+          paper: paper,
+          onConfirmDecision: onConfirmDecision,
+        ),
+      ),
     ),
   );
 }
 
 class _CoveredTopicsSheet extends StatefulWidget {
   final PaperDetail paper;
+  final Future<void> Function(bool approve, String comment)? onConfirmDecision;
 
-  const _CoveredTopicsSheet({required this.paper});
+  const _CoveredTopicsSheet({required this.paper, this.onConfirmDecision});
 
   @override
   State<_CoveredTopicsSheet> createState() => _CoveredTopicsSheetState();
@@ -31,10 +47,25 @@ class _CoveredTopicsSheet extends StatefulWidget {
 
 class _CoveredTopicsSheetState extends State<_CoveredTopicsSheet> {
   final PaperReviewService _service = PaperReviewService();
-  final List<String> _tabs = ['Common Topics', 'Detail', 'CLO Grid'];
+  final TextEditingController _commentController = TextEditingController();
 
   int _tab = 0;
   CoveredTopics? _topics;
+  bool _approve = true;
+  bool _saving = false;
+
+  bool get _reviewMode => widget.onConfirmDecision != null;
+
+  List<String> get _tabs {
+    if (_reviewMode) return ['CLO Grid', 'Common Topics', 'Detail'];
+    return ['Common Topics', 'Detail', 'CLO Grid'];
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -76,9 +107,9 @@ class _CoveredTopicsSheetState extends State<_CoveredTopicsSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Covered Topics & CLO Grid',
-                style: TextStyle(
+              Text(
+                _reviewMode ? 'Review CLO Grid' : 'Covered Topics & CLO Grid',
+                style: const TextStyle(
                   fontSize: AppFontSize.small,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
@@ -161,8 +192,9 @@ class _CoveredTopicsSheetState extends State<_CoveredTopicsSheet> {
   }
 
   Widget _buildContent(CoveredTopics topics) {
-    if (_tab == 0) return _buildCommon(topics);
-    if (_tab == 1) return _buildDetail(topics);
+    String name = _tabs[_tab];
+    if (name == 'Common Topics') return _buildCommon(topics);
+    if (name == 'Detail') return _buildDetail(topics);
     return _buildCloGrid();
   }
 
@@ -346,7 +378,190 @@ class _CoveredTopicsSheetState extends State<_CoveredTopicsSheet> {
                 ],
               ),
             ),
+          if (_reviewMode) _buildDecision(),
         ],
+      ),
+    );
+  }
+
+  Future<void> _confirm() async {
+    String? error = _service.validateDecision(
+      _approve,
+      _commentController.text,
+    );
+    if (error != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error)));
+      return;
+    }
+    setState(() {
+      _saving = true;
+    });
+    ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    NavigatorState navigator = Navigator.of(context);
+    try {
+      await widget.onConfirmDecision!(_approve, _commentController.text.trim());
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(_approve ? 'CLO grid approved' : 'Paper rejected'),
+        ),
+      );
+      navigator.pop();
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) {
+        setState(() {
+          _saving = false;
+        });
+      }
+    }
+  }
+
+  // Approve / Reject, comments and Confirm (HOD review only).
+  Widget _buildDecision() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: AppSpacing.l),
+        const Text(
+          'Select Decision',
+          style: TextStyle(
+            fontSize: AppFontSize.label,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textDark,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.s),
+        Row(
+          children: [
+            Expanded(
+              child: _decisionOption(
+                approve: true,
+                label: 'Approve',
+                icon: Icons.check_circle_outline,
+                color: AppColors.successGreen,
+                background: AppColors.successBackground,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.m),
+            Expanded(
+              child: _decisionOption(
+                approve: false,
+                label: 'Reject',
+                icon: Icons.cancel_outlined,
+                color: AppColors.rejectedText,
+                background: AppColors.warningBackground,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.l),
+        const Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: 'Comments ',
+                style: TextStyle(
+                  fontSize: AppFontSize.label,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+              TextSpan(
+                text: '(Required for Request Changes & Reject)',
+                style: TextStyle(fontSize: 10, color: AppColors.greyText),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.s),
+        Container(
+          height: 84,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.m,
+            vertical: 4,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: TextField(
+            controller: _commentController,
+            maxLines: null,
+            expands: true,
+            textAlignVertical: TextAlignVertical.top,
+            style: const TextStyle(fontSize: AppFontSize.label),
+            decoration: const InputDecoration(
+              hintText: 'Add your comments or feedback...',
+              hintStyle: TextStyle(
+                fontSize: AppFontSize.label,
+                color: AppColors.greyText,
+              ),
+              border: InputBorder.none,
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.l),
+        _saving
+            ? const SizedBox(
+                height: 49,
+                child: Center(child: CircularProgressIndicator()),
+              )
+            : AppButton(
+                text: 'Confirm Decision',
+                compact: true,
+                onPressed: _confirm,
+              ),
+      ],
+    );
+  }
+
+  Widget _decisionOption({
+    required bool approve,
+    required String label,
+    required IconData icon,
+    required Color color,
+    required Color background,
+  }) {
+    bool selected = _approve == approve;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _approve = approve;
+        });
+      },
+      child: Container(
+        height: 42,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(12),
+          border: selected ? Border.all(color: color, width: 1.5) : null,
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: AppFontSize.label,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
+            ),
+            Icon(
+              selected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              size: 16,
+              color: selected ? color : AppColors.inactiveTab,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -158,6 +158,52 @@ void main() {
     expect(find.text('Dashboard'), findsOneWidget);
   });
 
+  testWidgets('HOD: review CLO grid and decide', (tester) async {
+    usePhoneScreen(tester);
+    await tester.pumpWidget(const MyApp());
+    await tester.enterText(find.byType(TextFormField).at(0), 'hod@biit.edu.pk');
+    await tester.enterText(find.byType(TextFormField).at(1), '123456');
+    await tester.tap(find.text('Sign in'));
+    await tester.pump();
+    await settle(tester);
+
+    // A paper is waiting for the CLO review
+    expect(find.text('Review Paper'), findsOneWidget);
+    await tester.tap(find.text('Review Paper').first);
+    await settle(tester);
+    expect(find.text('Review CLO Grid'), findsOneWidget);
+    expect(find.text('CLO Summary'), findsOneWidget);
+    expect(find.text('Final Exam • 30 Marks'), findsOneWidget);
+
+    // Common topics and Detail tabs still work
+    await tester.tap(find.text('Common Topics'));
+    await settle(tester);
+    expect(find.text('Syntax Analysis'), findsOneWidget);
+    await tester.tap(find.text('CLO Grid'));
+    await settle(tester);
+
+    // Reject without a comment is not allowed
+    await tester.tap(find.text('Reject'));
+    await settle(tester);
+    await tester.ensureVisible(find.text('Confirm Decision'));
+    await tester.tap(find.text('Confirm Decision'));
+    await settle(tester);
+    expect(
+      find.text('Please add a comment to reject the paper'),
+      findsOneWidget,
+    );
+    await tester.pump(const Duration(seconds: 6));
+
+    // Approve
+    await tester.tap(find.text('Approve'));
+    await settle(tester);
+    await tester.ensureVisible(find.text('Confirm Decision'));
+    await tester.tap(find.text('Confirm Decision'));
+    await settle(tester);
+    expect(find.text('Review CLO Grid'), findsNothing);
+    expect(find.text('Review Paper'), findsNothing);
+  });
+
   testWidgets('Director: dashboard, papers and courses', (tester) async {
     usePhoneScreen(tester);
     await tester.pumpWidget(const MyApp());
