@@ -5,6 +5,8 @@ import '../../auth/domain/user_model.dart';
 import '../../datacell/presentation/datacell_home_screen.dart';
 import '../../director/domain/director_models.dart';
 import '../../director/domain/director_service.dart';
+import '../../faculty/presentation/faculty_home_screen.dart';
+import '../../faculty/presentation/faculty_papers_screen.dart';
 import '../../hod/presentation/clo_rules_screen.dart';
 import '../../hod/presentation/hod_home_screen.dart';
 import '../../paper_review/domain/paper_review_models.dart';
@@ -194,6 +196,19 @@ class _MainShellState extends State<MainShell> {
       }
       if (label == 'CLO Rule') {
         return const CloRulesScreen();
+      }
+    }
+    if (widget.user.role == 'faculty') {
+      if (label == 'Home') {
+        return FacultyHomeScreen(
+          user: widget.user,
+          onLogout: widget.onLogout,
+          onOpenProfile: () => _goToTab('Profile'),
+          onViewAllPapers: () => _goToTab('Papers'),
+        );
+      }
+      if (label == 'Papers') {
+        return const FacultyPapersScreen();
       }
     }
     // Replaced by the real screen when that feature is built.
